@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Gestion - Demo</title>
+
+    <style>
+        body {
+            margin : 0;
+            padding: 3em;
+            font   : 1em monospace;
+            white-space: pre-wrap;
+        }
+
+        a {
+            font-weight: bold;
+        }
+
+        button {
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="/js/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+$(function () {
+    var socket   = io.connect(window.location.origin);
+
+    $('#start').on('click', function (evt) {
+        evt.preventDefault();
+
+        socket.emit('start');
+    });
+
+    socket.on('updateUsers', function (data) {
+        var place = document.getElementById('joueurs');
+
+        place.innerHTML = '';
+        for(var name in data) {
+            place.innerHTML += "\n// " + name;
+        }
+    })
+})
+    </script>
+</head>
+<body>
+// ----------------------- //
+// DEMARRER LE JEU : <a href="#" id="start">START</a> //
+// ----------------------- //
+// JOUEURS : <span id="joueurs"></span>
+// ----------------------- //
+</body>
+</html>

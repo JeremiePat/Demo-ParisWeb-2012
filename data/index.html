@@ -1,0 +1,361 @@
+<!doctype html>
+<!--[if lte IE 7]>  <html lang="fr" class="ie7">  <![endif]-->
+<!--[if gte IE 8]><!-->  <html lang="fr">  <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    
+    <title>Paris-Web 2012 - Demo</title>
+
+    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+
+    <script src="/js/modernizr.min.js"   ></script>
+    <script src="/js/underscore.min.js"  ></script>
+    <script src="/js/jquery.min.js"      ></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+// ------------------------------------------- //
+// Chargement de bibliothèques complémentaires //
+// ------------------------------------------- //
+
+Modernizr.load({
+    test : Modernizr.video,
+    yep  : '/js/captionator.js',
+    nope : [
+        '/js/me/mediaelement-and-player.min.js',
+        '/js/me/mediaelementplayer.min.css'
+    ],
+    complete : function () {
+        $(function () {
+            if (window.captionator) {
+                window.captionator.captionify();
+            }
+            else {
+                $('video').mediaelementplayer({
+                    // enables Flash and Silverlight to resize to content size
+                    enableAutosize: false,
+                    alwaysShowControls: false
+                });
+            }
+        });
+    }
+});
+
+// ----------------------------------- //
+// Définition de fonctions utilitaires //
+// ----------------------------------- //
+
+String.prototype.pad = function (padStr, length) {
+    var string = this,
+        padStr = padStr || ' ',
+        length = length || 0;
+
+    while (string.length < length) {
+        string = padStr + string;
+    }
+
+    if (string.length > length) {
+        string = string.substr(string.length - length);
+    }
+
+    return string;
+}
+
+function sortByScore(a, b) {
+    if(a.score < b.score) { return  1; }
+    if(a.score > b.score) { return -1; }
+
+    var score = [0,0];
+    for (var i = 0, l = 10; i < l; i++) {
+        if(!a.timing[i] && !b.timing[i]) { continue; }
+        if(!a.timing[i]) { score[1]++; continue; }
+        if(!b.timing[i]) { score[0]++; continue; }
+        if(a.timing[i] < b.timing[i]) {
+            score[0]++; 
+        } else {
+            score[1]++
+        }
+    }
+
+    if(score[0] < score[1]) { return  1; }
+    if(score[0] > score[1]) { return -1; }
+    
+    return 0;
+}
+
+function userRank(users) {
+    var result = _.map(users, function (value, key, obj) {
+        var timeMap = _.map(value.game, function (value, key, obj) {
+            return value.time;
+        })
+
+        return {
+            user   : key,
+            score  : value.score,
+            timing : timeMap
+        };
+    })
+
+    result.sort(sortByScore);
+
+    return result;
+}
+
+function mixColor(a, b, progression) {
+    var i, color1, color2;
+    var progression = progression || 50;
+    var hexcolor    = /([0-9a-f]{2})/gi;
+    var color       = [0,0,0];
+
+    try {
+        color1 = a.match(hexcolor);
+        color2 = b.match(hexcolor); 
+
+        for (i = 0; i < 3; i++) {
+            color1[i] = parseInt('0x' + color1[i]);
+            color2[i] = parseInt('0x' + color2[i]);
+            color[i]  = color1[i] + (color2[i] - color1[i])*progression/100;
+        }
+    } catch(e) {}
+
+    return '#' + Math.round(color[0]).toString(16).pad('0',2)
+               + Math.round(color[1]).toString(16).pad('0',2)
+               + Math.round(color[2]).toString(16).pad('0',2);
+}
+
+function animateTime(value, begin) {
+    var colors   = ['#b1d44f','#fab41c','#ef3628'];
+    var color    = colors[2];
+    var duration = 30000;
+    var time     = +new Date;
+    var value    = value || 100;
+    var begin    = begin || time;
+    var now      = value * (begin - time + duration) / duration;
+
+    if (now < 0) { now = 0 }
+
+    if (now > 50) {
+        color = mixColor(colors[0], colors[1], (100 - now)*2);
+    } else {
+        color = mixColor(colors[1], colors[2], ( 50 - now)*2);
+    }
+
+    $('#time span').css({
+        width: now.toFixed(2) + '%',
+        backgroundColor: color
+    });
+
+    if (now > 0) {
+        _.delay(animateTime, 30, value, begin);
+    }
+}
+
+$(function () {
+    var animations = ['bounceInDown','bounceInRight','bounceInUp','bounceInLeft','bounceIn'];
+    var username   = '';
+    var state      = 'login';
+    var form       = $('#input');
+    var socket     = io.connect(window.location.origin);
+
+    // ------------------------------------ //
+    // Gestion des évènement de l'interface //
+    // ------------------------------------ //
+    form.on('submit', function(evt) {
+        evt.preventDefault();
+
+        var data = {
+            user: username,
+            data: $("#data").val()
+        };
+
+        socket.emit(state, data);
+    });
+
+    // ----------------------------- //
+    // Gestion des évènements réseau //
+    // ----------------------------- //
+    socket.on('error', function(msg) {
+        // En cas d'erreur, on affiche une simple alerte
+        alert(msg);
+    });
+
+    socket.on('registerUser', function(data) {
+        // Le nom d'utilisateur sert de tokken sur la connexion
+        username = data;
+    });
+
+    // A chaque fois qu'on a un nouvel utilisateur, on met la liste à jour
+    socket.on('updateUsers', function(data) {
+        var users = [];
+
+        for(var n in data) {
+            users.push(n);
+        }
+
+        $('#users')
+            .html('<li>' + users.join("</li><li>") + '</li>');
+    });
+
+    socket.on('start', function () {
+        // Quand le jeu commence, on configure ce que
+        // voie le joueur correctement
+        state = 'guessTitle';
+        $("#data").attr('placeholder','Quel est le titre du film ?').val('');
+        $('.perspective').removeClass(animations.join(' ') + ' answer');
+        $('section.video').css({height:'100%'});
+    });
+
+    socket.on('success', function (data) {
+        // Changement de style selon la qualité des réponses
+        // Si la réponse est bonne, le fromulaire est désactivé
+        $('#data')
+            .addClass(   data ? 'true'  : 'false')
+            .removeClass(data ? 'false' : 'true')
+            .get(0).disabled = !!data;
+    });
+
+    socket.on('status', function (data) {
+        $('#point span')
+            .html(data.score);
+    })
+
+    socket.on('updateView', function (data) {
+        // Le changement de vue se fait toute les 40s pour nous laisser
+        // le temps de gérer les transitions.
+        $("#data")
+            .val('')
+            .removeClass('true false')
+            .get(0).disabled = false;
+
+        $('#time span')
+            .addClass('counting');
+
+        // Fallback pour les navigateurs qui ne supportent
+        // Pas les animations CSS
+        if (!Modernizr.cssanimations) {
+            animateTime();
+        }
+
+        $('section')
+            .eq(data.view)
+                .css({height:0})
+            .end()
+            .eq(data.view + 1)
+                .find('.perspective')
+                    .addClass(animations[data.view % 5])
+                    .end();
+
+        var video = $('video')[data.view];
+        if (video.player) {
+            video.player.play();
+        } else {
+            video.play();
+        }
+
+        _.delay(function () {
+            $('section')
+                .eq(data.view + 1)
+                    .find('.perspective')
+                        .addClass('answer')
+                            .find('.back img')
+                                .attr('alt',data.film.title);
+
+            $("#data")
+                .val('')
+                .removeClass('true false')
+                .get(0).disabled = true;
+
+            $('#time span')
+                .removeClass('counting');
+        }, 30000);
+    });
+
+    socket.on('stop', function (data) {
+        // Fin du jeu, affichage des résultats
+        $('section:not(#resultat)')
+            .css({height:0});
+
+        data = userRank(data);
+
+        var r = ['<ol>'];
+        var c = 0;
+        var t = ['first','second','third']
+
+        for (var i in data) {
+            r.push('<li id="' + t[c++] + '"><span>');
+            r.push(data[i].user + ' : ' + data[i].score);
+            r.push('</span></li>');
+
+            if(c > 2) break;
+        }
+
+        r.push('</ol>')
+
+        $('#resultat').html(r.join(''));
+    });
+});
+    </script>
+</head>
+<body>
+
+<form id="input">
+    <input id="data" placeholder="Votre nom d'utilisateur ?" value="" />
+    <button>ok</button>
+</form>
+
+<header>
+    <p id="point">
+        Score
+        <span aria-live="polite" aria-label="Score">0</span>    
+    </p>
+    <div id="time">
+        <span>30</span>
+    </div>
+</header>
+
+<section id="intro">
+    <h1>http://{{localhost}}:{{port}}</h1>
+    <h2>WiFi&nbsp;: Demo-Paris-Web</h2>
+
+    <div id="users-box">
+        <h3>Joueurs en lice</h3>
+        <ul id="users" role="log" aria-live="polite"></ul>
+    </div>
+</section>
+
+{{#game}}
+<section class="video">
+    <div class="perspective">
+        <div class="element">
+            <div class="video-wrapper front">
+                <video preload="auto" width="480" height="360">
+                    <source src="video/{{filename}}.mp4"  type="video/mp4">
+                    <source src="video/{{filename}}.webm" type="video/webm">
+                    <track  src="video/{{filename}}.vtt"  kind="subtitles" type="text/vtt" srclang="fr" label="Français" default></track>
+                </video>     
+            </div>
+            <div class="back">
+                <img  src="img/{{filename}}.jpg" alt="ici le titre qui va bien :)" />
+            </div>
+        </div>
+    </div>
+</section>
+{{/game}}
+
+<section id="resultat">
+    <ul>
+        <li id="first">
+            <span>pseudo 1</span>
+        </li>
+        <li id ="second">
+            <span>pseudo 2</span>
+        </li>
+        <li id="third">
+            <span>pseudo 3</span>
+        </li>
+    </ul>
+</section>
+
+</body>
+</html>
