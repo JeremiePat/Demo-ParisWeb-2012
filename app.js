@@ -34,7 +34,7 @@ var game = [
     { 
         title   : "Indiana Jones\n et les aventuriers de l'arche perdue",
         filename: "1",
-        answer  : /^(Indiana\s+Jones(\s*:?|et))\s+?Les\s+aventuriers\s+de\s+l'arche\s+perdue$/ig 
+        answer  : /^(Indiana\s+Jones(\s*:?|\s+et)\s+)?Les\s+aventuriers\s+de\s+l'arche\s+perdue$/ig 
     },
     {
         title   : "Piranhas 3D",
