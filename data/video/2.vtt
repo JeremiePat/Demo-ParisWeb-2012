@@ -2,38 +2,43 @@ WEBVTT
 
 1
 00:00:01.000 --> 00:00:03.000
-La secousse a ouvert un passage. 
-Maintenant on peut y accéder.
+<c.magenta>La secousse a ouvert un passage.</c>
+<c.magenta>Maintenant on peut y accéder.</c>
 
 2
 00:00:03.000 --> 00:00:05.000
-On descent dans la faille.
+<c.white>On descend dans la faille.</c>
 
-2
+3
 00:00:05.000 --> 00:00:09.000
-Oh la vache, Novak ! 
-Elle fait au moins 70m de profondeur.
+<c.white>Oh la vache, Novak ! </c>
+<c.white>Elle fait au moins 70m de profondeur.</c>
 
-2
+4
+00:00:16.500 --> 00:00:18.500
+<c.red>Coup de cymbale violent</c>
+
+5
 00:00:17.500 --> 00:00:18.500
-Sam ?
+<c.yellow>Sam ?</c>
 
-2
+6
 00:00:18.500 --> 00:00:20.000
-Y'a un truc qui m'a mordu
+<c.white>Y'a un truc qui m'a mordu</c>
 
-2
+7
 00:00:20.000 --> 00:00:23.000
-Sam ? Raconte, qu'est-ce que tu voie ?
+<c.yellow>Sam ?</c>
+<c.yellow>Raconte, qu'est-ce que tu vois ?</c>
 
-2
+8
 00:00:23.500 --> 00:00:25.000
-Oh, putain !
+<c.white>Oh, putain !</c>
 
-2
+9
 00:00:25.500 --> 00:00:26.500
-Sam ?
+<c.yellow>Sam ?</c>
 
-2
-00:00:27.500 --> 00:00:28.000
-AAAAAAAH !
+10
+00:00:27.500 --> 00:00:29.000
+<c.white>AAAAAAAH !</c>

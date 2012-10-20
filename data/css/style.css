@@ -245,6 +245,12 @@ header {
             border-radius: 15px;
 }
 
+input:-moz-placeholder, 
+input::-webkit-input-placeholder, 
+input:-ms-input-placeholder  {
+    color: ; rgba(255,255,255,.5);
+}
+
 .ie7 #input {
     padding-left: 155px;
 }
@@ -908,14 +914,33 @@ video {
 
 
 /** --- = @section SOUS-TITRES --- */
+.magenta, .white, .yellow, .yellow, .cyan, .green, .red {
+    display: block;
+}
+
 .magenta {
     color: magenta;
+}
+
+.white {
+    color: white;
+}
+
+.yellow {
+    color: yellow;
 }
 
 .red {
     color: red;
 }
 
+.cyan {
+    color: cyan;
+}
+
+.green {
+    color: green;
+}
 
 /** --- = @section RESULTATS --- */
 #resultat ol {
