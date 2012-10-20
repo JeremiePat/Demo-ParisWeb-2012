@@ -18,6 +18,7 @@ var Mustache  = require('mustache');
 var conf = {
     baseDir   : "./data",
     localhost : os.hostname(),
+    wifi      : "WifiHETIC",
     port      : 8888,
     viewDelay : 40000 // 40s
 }
@@ -115,6 +116,7 @@ router.get("/", function(req, res) {
         res.send(Mustache.to_html(data.toString(), {
             localhost : conf.ip,
             port      : conf.port,
+            wifi      : conf.wifi,
             game      : game
         }));
     });

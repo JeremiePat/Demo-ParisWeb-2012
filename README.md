@@ -1,9 +1,9 @@
 Demo-ParisWeb-2012
 ==================
 
-Depot de la démo faite à Paris Web 2012
+Dépôt de la démo faite à Paris Web 2012.
 
-Cette démo est un "blind test" video qui repose sur une application à base de WebSocket.
+Cette démo est un "blind test" vidéo qui repose sur une application à base de WebSocket.
 
 Pour pouvoir faire tourner cette démo, vous avez besoin d'installer NodeJS
 
