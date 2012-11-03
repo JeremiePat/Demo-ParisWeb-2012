@@ -113,12 +113,17 @@ var server = http.createServer(router).listen(conf.port);
 // --------------------------- //
 router.get("/", function(req, res) {
     fs.readFile(conf.baseDir + '/index.html', function(err, data) {
-        res.send(Mustache.to_html(data.toString(), {
-            localhost : conf.ip,
-            port      : conf.port,
-            wifi      : conf.wifi,
-            game      : game
-        }));
+        if(data && data.toString) {
+            res.send(Mustache.to_html(data.toString(), {
+                localhost : conf.ip,
+                port      : conf.port,
+                wifi      : conf.wifi,
+                game      : game
+            }));
+        } else {
+            res.statusCode = 500;
+            res.send('Oups! Something wrong happened, please, try again.')
+        }
     });
 });
 // --------------------------- //

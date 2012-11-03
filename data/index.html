@@ -177,7 +177,9 @@ $(function () {
     // ----------------------------- //
     socket.on('error', function(msg) {
         // En cas d'erreur, on affiche une simple alerte
-        alert(msg);
+        if(console && console.log) {
+            console.log(msg);
+        }
     });
 
     socket.on('registerUser', function(data) {
